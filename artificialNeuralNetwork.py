@@ -7,6 +7,7 @@ An artifical neural network class.
 '''
 
 import numpy
+import math
 
 class ANN():
     def __init__(self,hiddenLayers):
@@ -45,10 +46,11 @@ class ANN():
         '''
             Takes a list of input values, which must be the same length as self.layerArray(0)
             Produces a list of output values, which will be the same length as self.layerArray(-1)
+            Right now, uses simple sigmoidal function at each node.
         '''
         
-        'input variable to be reused in the big loop, initialized to the input to the network'
-        input = inputList
+        'inputFeed variable to be reused in the big loop, initialized to the inputFeed to the network'
+        inputFeed = inputList
         
         'main external loop, pass along activation at each layer, and pass it along'
         for i in range(len(self.weightMatrixList)):
@@ -58,23 +60,31 @@ class ANN():
             for j in range(len(self.layerArray[i+1])):
                 #set the accumulator to initially be the bias of this node
                 acc = (self.layerArray[i+1])[j]
-                for k in range(len(input)):
-                    acc += weightMatrix[j,k]*input[k]
-                accumInput.append(acc)
-            input = accumInput
+                for k in range(len(inputFeed)):
+                    acc += weightMatrix[j,k]*inputFeed[k]
+                accumInput.append(sigmoid(acc))
+            inputFeed = accumInput
             
-        return input
+        return inputFeed
             
             
+  
+def sigmoid(x):
+    '''
+    A simple sigmoidal function for applying thresholding to the input at each node. Is simple to differentiate, and is
+    based of off Roberts slides here: http://www.cems.uvm.edu/~rsnapp//teaching/cs295ml/notes/backpropagation.pdf
+    '''
+    return (2/math.pi) * math.atan(x)
     
 def main():
-    testAnn = ANN([5,30,12,1])
+    testAnn = ANN([5,30,12,5])
 #     weights = testAnn.getWeightMatrixList()
 #     for mat in weights:
 #         print(mat)
 #         print(numpy.shape(mat))
 #     print(testAnn.getHiddenLayers())
-    print(testAnn.feed([2,1,1,2,1]))
+    print(testAnn.feed([700,40,28,4000,17]))
+    print(testAnn.feed([2,1,1,2,1]))    
     print(testAnn.feed([2,1,1,2,1]))    
     
 main()
