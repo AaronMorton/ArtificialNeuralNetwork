@@ -8,6 +8,7 @@ An artifical neural network class.
 
 import numpy
 import math
+from arffWrapper import arffWrapper
 
 class ANN():
     def __init__(self,hiddenLayers):
@@ -15,8 +16,17 @@ class ANN():
             Create internal representation of the network, using the hiddenLayers array.
             hiddenLayers(i) represents the number of nodes in layer i. 
             layer 0 is the input layer, and the last layer is the output layer
-            Weights are randomly generated
+            Weights are randomly generated b/w 0 and 1
         '''
+        
+        #create layerArray matrix, initialized with presynaptic activation of 0 for each node
+        hiddenLayersWeights = []
+        for i in range(len(hiddenLayers)):
+            layer = []
+            for j in range(hiddenLayers[i]):
+                layer.append(0)
+            hiddenLayersWeights.append(layer)
+        self.layerArray = hiddenLayersWeights
         
         #create list of weight matrices, with random weights for each connection
         #one weight matrix for each connection b/w layers (e.g) one less than number of layers
@@ -24,7 +34,6 @@ class ANN():
         matrixList = []
         for i in range(len(hiddenLayers)-1):
             weightMatrix = numpy.matrix(numpy.random.rand(hiddenLayers[i+1],hiddenLayers[i]+1))
-            print(numpy.shape(weightMatrix));
             matrixList.append(weightMatrix)
         self.weightMatrixList = matrixList
         
@@ -44,6 +53,9 @@ class ANN():
         'inputFeed variable to be reused in the big loop, initialized to the inputFeed to the network'
         inputFeed = inputList
         
+        'put the input as the pre-synaptic activation of the first layer (the input)'
+        self.layerArray[0]=inputList;
+        
         'main external loop, pass along activation at each layer, and pass it along'
         for i in range(len(self.weightMatrixList)):
             weightMatrix = self.weightMatrixList[i]
@@ -51,14 +63,14 @@ class ANN():
             'main internal loop, calculate weighted activation sum at each node in current layer'
             for j in range(len(self.layerArray[i+1])):
                 #set the accumulator to initially be the bias of this node
-                #NEED TO GET LAST ELEMENT IN ROW AS THE BIAS
                 acc = weightMatrix[j,len(inputFeed)]
-                #acc = (self.layerArray[i+1])[j]
                 for k in range(len(inputFeed)):
                     acc += weightMatrix[j,k]*inputFeed[k]
+                #save the pre-synaptic activation into the layerArray
+                (self.layerArray[i+1])[j] = acc;
                 accumInput.append(sigmoid(acc))
             inputFeed = accumInput
-            
+        
         return inputFeed
             
             
@@ -69,16 +81,24 @@ def sigmoid(x):
     based of off Roberts slides here: http://www.cems.uvm.edu/~rsnapp//teaching/cs295ml/notes/backpropagation.pdf
     '''
     return (2/math.pi) * math.atan(x)
+
+def sigmoidDeriv(x):
+    '''
+    A simple function to return the result of applying the derivative of the recently used sigmoid function to the input
+    '''
+    
+    return (2/math.pi) * (1 / (1 + math.pow(x,2)))
     
 def main():
-    testAnn = ANN([5,30,12,5])
+    data = arffWrapper("export.arff");
+    testAnn = ANN([data.getAttrCount(),2,1])
 #     weights = testAnn.getWeightMatrixList()
 #     for mat in weights:
 #         print(mat)
 #         print(numpy.shape(mat))
 #     print(testAnn.getHiddenLayers())
-    print(testAnn.feed([700,40,28,4000,17]))
-    print(testAnn.feed([2,1,1,2,1]))    
-    print(testAnn.feed([2,1,1,2,1]))    
+    print(testAnn.feed(data.getInstance(0)))
+    print(testAnn.feed(data.getInstance(1)))
+    print(testAnn.feed(data.getInstance(0)))       
     
 main()
