@@ -15,24 +15,16 @@ class ANN():
             Create internal representation of the network, using the hiddenLayers array.
             hiddenLayers(i) represents the number of nodes in layer i. 
             layer 0 is the input layer, and the last layer is the output layer
-            Weights are randomly generated b/w 0 and 1
+            Weights are randomly generated
         '''
-        
-        #create layerArray matrix, initialized with biases of 0 for each node
-        #the biases for the input layer should always be 0 anyway (I think)
-        hiddenLayersWeights = []
-        for i in range(len(hiddenLayers)):
-            layer = []
-            for j in range(hiddenLayers[i]):
-                layer.append(0)
-            hiddenLayersWeights.append(layer)
-        self.layerArray = hiddenLayersWeights
         
         #create list of weight matrices, with random weights for each connection
         #one weight matrix for each connection b/w layers (e.g) one less than number of layers
+        #last column in weight matrix is the bias of that node
         matrixList = []
         for i in range(len(hiddenLayers)-1):
-            weightMatrix = numpy.matrix(numpy.random.rand(hiddenLayers[i+1],hiddenLayers[i]))
+            weightMatrix = numpy.matrix(numpy.random.rand(hiddenLayers[i+1],hiddenLayers[i]+1))
+            print(numpy.shape(weightMatrix));
             matrixList.append(weightMatrix)
         self.weightMatrixList = matrixList
         
@@ -59,7 +51,9 @@ class ANN():
             'main internal loop, calculate weighted activation sum at each node in current layer'
             for j in range(len(self.layerArray[i+1])):
                 #set the accumulator to initially be the bias of this node
-                acc = (self.layerArray[i+1])[j]
+                #NEED TO GET LAST ELEMENT IN ROW AS THE BIAS
+                acc = weightMatrix[j,len(inputFeed)]
+                #acc = (self.layerArray[i+1])[j]
                 for k in range(len(inputFeed)):
                     acc += weightMatrix[j,k]*inputFeed[k]
                 accumInput.append(sigmoid(acc))
