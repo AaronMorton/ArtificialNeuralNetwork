@@ -73,7 +73,40 @@ class ANN():
         
         return inputFeed
             
+    def objectiveFunction(self,instanceList,classList):
+        '''
+        For batch update, this produces a total error given a list of instances and classes, using the current state
+        of the network.
+        '''
+        
+        'Make the error accumulator, which will always be a number for now, as if there is multiple output values, each is assumed to have equal importance'
+        if type(classList[0]) == list:
+            errorAccum = 0.0
+            listClass = True
+        else:
+            errorAccum = 0.0
+            listClass = False
             
+        'Sum up all of the squared errors'
+        for i in range(len(instanceList)):
+            instance = instanceList[i]
+            #If the class is a list of values, sum up the errors across all of the outputs
+            if listClass:
+                producedValue = self.feed(instance)
+                for j in range(len(producedValue)):
+                    producedValuePart = producedValue[j]
+                    trueValuePart = (classList[i])[j]
+                    error = math.pow((producedValuePart - trueValuePart),2)
+                    errorAccum += error  
+            #If the class is one value, sum up the errors as normal
+            else:
+                producedValue = self.feed(instance)[0]
+                trueValue = classList[i]
+                error = math.pow((producedValue - trueValue),2)
+                errorAccum += error            
+            
+        return errorAccum
+
   
 def sigmoid(x):
     '''
@@ -86,7 +119,6 @@ def sigmoidDeriv(x):
     '''
     A simple function to return the result of applying the derivative of the recently used sigmoid function to the input
     '''
-    
     return (2/math.pi) * (1 / (1 + math.pow(x,2)))
     
 def main():
@@ -97,8 +129,6 @@ def main():
 #         print(mat)
 #         print(numpy.shape(mat))
 #     print(testAnn.getHiddenLayers())
-    print(testAnn.feed(data.getInstance(0)))
-    print(testAnn.feed(data.getInstance(1)))
-    print(testAnn.feed(data.getInstance(0)))       
+    print(testAnn.objectiveFunction(data.getInstances(), data.getClasses()))    
     
 main()
