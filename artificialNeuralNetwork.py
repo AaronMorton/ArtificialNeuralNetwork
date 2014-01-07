@@ -130,5 +130,4 @@ def main():
 #         print(numpy.shape(mat))
 #     print(testAnn.getHiddenLayers())
     print(testAnn.objectiveFunction(data.getInstances(), data.getClasses()))    
-    
 main()
