@@ -9,6 +9,7 @@ An artifical neural network class.
 import numpy
 import math
 from arffWrapper import arffWrapper
+import copy
 
 class ANN():
     def __init__(self,hiddenLayers):
@@ -72,10 +73,54 @@ class ANN():
             inputFeed = accumInput
         
         return inputFeed
-            
-    def objectiveFunction(self,instanceList,classList):
+    
+    def trainBatch(self,instanceList,classList):
         '''
-        For batch update, this produces a total error given a list of instances and classes, using the current state
+        This trains the network, using the current state of the network, and list of instances and associated classes.
+        '''
+        'Create a list of matrices that have the same dimension as the internal weight matrix list (for holding the gradient)'
+        gradAccumList = copy.deepcopy(self.weightMatrixList)
+        
+        'For now, go through all instances, feed each into network, produce gradients, and accumulate them'
+        for pos in range(len(instanceList)):
+            inst = instanceList(pos)
+            clas = classList(pos)
+            
+            'here, feed the instance into the network. potentially calculate error as well'
+            result = self.feed(inst)
+            
+            'set in the accumulator all of the gradients of internal weights (excluding weights to the output'
+            for i in range(len(gradAccumList)-1):
+                #get the weight matrix and the corresponding gradient matrix
+                weightMatrix = self.weightMatrixList[i]
+                gradMatrix = gradAccumList[i]
+                rows = numpy.shape(weightMatrix)[0]
+                columns = numpy.shape(weightMatrix)[1]
+                #for each weight, compute the gradient
+                for j in range(rows):
+                    for k in range(columns):
+                        #determine the output of the node in the previous layer
+                        if(k<columns-1):
+                            #if the node is in the previous layer, find its presynaptic sum and recompute
+                            preSynapPrev = (self.layerArray[i])[k]
+                            output = sigmoid(preSynapPrev)
+                        else:
+                            #if the value is the last one, it is the internal bias, in which case it's output is simply
+                            #the value of the bias
+                            output = weightMatrix[j,k]
+                            
+                        #determine the delta internal, using another function
+                        delta = self.getDeltaInternal() #UNWRITTEN FUNCTION
+                        gradMatrix[j,k]= -delta * output
+                        
+            'Next, determine the gradient for all weights that lead to the output layer'           
+            
+            
+        
+            
+    def objectiveFunctionBatch(self,instanceList,classList):
+        '''
+        This produces a total error given a list of instances and classes, using the current state
         of the network.
         '''
         
@@ -129,5 +174,5 @@ def main():
 #         print(mat)
 #         print(numpy.shape(mat))
 #     print(testAnn.getHiddenLayers())
-    print(testAnn.objectiveFunction(data.getInstances(), data.getClasses()))    
+    print(testAnn.objectiveFunctionBatch(data.getInstances(), data.getClasses()))    
 main()
