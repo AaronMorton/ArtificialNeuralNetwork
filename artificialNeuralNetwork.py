@@ -89,31 +89,54 @@ class ANN():
             'here, feed the instance into the network. potentially calculate error as well'
             result = self.feed(inst)
             
-            'set in the accumulator all of the gradients of internal weights (excluding weights to the output'
-            for i in range(len(gradAccumList)-1):
-                #get the weight matrix and the corresponding gradient matrix
-                weightMatrix = self.weightMatrixList[i]
-                gradMatrix = gradAccumList[i]
-                rows = numpy.shape(weightMatrix)[0]
-                columns = numpy.shape(weightMatrix)[1]
-                #for each weight, compute the gradient
-                for j in range(rows):
-                    for k in range(columns):
-                        #determine the output of the node in the previous layer
-                        if(k<columns-1):
-                            #if the node is in the previous layer, find its presynaptic sum and recompute
-                            preSynapPrev = (self.layerArray[i])[k]
-                            output = sigmoid(preSynapPrev)
-                        else:
-                            #if the value is the last one, it is the internal bias, in which case it's output is simply
-                            #the value of the bias
-                            output = weightMatrix[j,k]
-                            
-                        #determine the delta internal, using another function
-                        delta = self.getDeltaInternal() #UNWRITTEN FUNCTION
-                        gradMatrix[j,k]= -delta * output
+            'Create a list of lists, with same dimensions as internal layerArray, each number corresponds to a node'
+            deltaArray = copy.deepcopy(self.layerArray)
+            
+            'Fill up the delta array, starting with the outmost node(s) and working backwards'
+            for i in range(len(deltaArray)):
+                layer = len(deltaArray)-(i+1)
+                'If dealing with output layer,compute delta differently'
+                if(layer == len(deltaArray) - 1):
+                    for j in range(len(deltaArray(layer))):
+                        #HERE I AM ASSUMING THAT THE CLASS IS ONE DIMENSIONAL
+                        error = clas[pos] - result[j]
+                        preSynap = (self.layerArray[layer])[j]
+                        derivAppl = sigmoidDeriv(preSynap)
                         
-            'Next, determine the gradient for all weights that lead to the output layer'           
+                        'Produce the delta, put it in the array'
+                        delta = error * derivAppl
+                        (deltaArray[layer])[j] = delta
+                    'Otherwise, compute delta the normal way'
+                else:
+                    'Get the appropriate weight matrix'
+                    weightMatrix = self.weightMatrixList[layer]
+                    
+                    'For each node in this layer, compute the delta and put it in the array'
+                    for j in range(len(deltaArray(layer))):
+                        preSynap = (self.layerArray[layer])[j]
+                        derivAppl = sigmoidDeriv(preSynap)
+                        
+                        'Sum up the product of deltas and weights across all nodes in the next layer'
+                        deltaWeightSum = 0.0
+                        for k in range(len(deltaArray(layer+1))):
+                            delta = deltaArray[k]
+                            weight = weightMatrix[k,j]
+                            deltaWeightSum += delta*weight
+                            
+                        'Produce delta, put it in the array'
+                        delta = derivAppl * deltaWeightSum
+                        (deltaArray[layer])[j] = delta
+            
+            'Use these deltas to produce the gradients'
+            for layer in range(1,len(deltaArray)):
+                gradAccumMatrix = gradAccumList[layer-1]
+                rows = numpy.shape(gradAccumMatrix)[0]
+                columns = numpy.shape(gradAccumMatrix)[1]
+                ''''ITERATE THROUGH THE accumulated MATRIX, at each value add to itself:
+                (DELTA OF TARGET NODE) * (OUTPUT OF SOURCE NODE)
+                ENSURE THAT ALL OF THE VALUES IN gradAccumMatrix's matrices are 0 to start, which could be annoying'''
+   
+                        
             
             
         
