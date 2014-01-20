@@ -1,9 +1,7 @@
 ArtificialNeuralNetwork
 =======================
 Open Issues:  
-- Set up functions and arrays to hold gradients
-- Implement the math
-- Test, make sure error actually goes down.
+- Extensive testing and fixing, possibly add an online training method.
 
 Later:
 - Ensure actual generalizability by testing with other arff files

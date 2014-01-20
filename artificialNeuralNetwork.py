@@ -74,14 +74,26 @@ class ANN():
         
         return inputFeed
     
-    def trainBatch(self,instanceList,classList):
+    def trainBatch(self,instanceList,classList,stepSize):
         '''
         This trains the network, using the current state of the network, and list of instances and associated classes.
+        New weights will not take effect on pre-synap activation until .feed is called.
         '''
         'Create a list of matrices that have the same dimension as the internal weight matrix list (for holding the gradient)'
         gradAccumList = copy.deepcopy(self.weightMatrixList)
         
-        'For now, go through all instances, feed each into network, produce gradients, and accumulate them'
+        'set all elements in the gradAccumList to 0'
+        for i in range(0,len(gradAccumList)):
+                gradAccumMatrix = gradAccumList[i]
+                rows = numpy.shape(gradAccumMatrix)[0]
+                columns = numpy.shape(gradAccumMatrix)[1]
+                'iterate over the accumulated gradient matrix'
+                for row in rows:
+                    for column in columns:
+                        gradAccumMatrix[row,column] = 0
+                        
+        
+        'go through all instances, feed each into network, produce gradients, and accumulate them'
         for pos in range(len(instanceList)):
             inst = instanceList(pos)
             clas = classList(pos)
@@ -127,16 +139,27 @@ class ANN():
                         delta = derivAppl * deltaWeightSum
                         (deltaArray[layer])[j] = delta
             
+            
+            
             'Use these deltas to produce the gradients'
             for layer in range(1,len(deltaArray)):
                 gradAccumMatrix = gradAccumList[layer-1]
                 rows = numpy.shape(gradAccumMatrix)[0]
                 columns = numpy.shape(gradAccumMatrix)[1]
-                ''''ITERATE THROUGH THE accumulated MATRIX, at each value add to itself:
-                (DELTA OF TARGET NODE) * (OUTPUT OF SOURCE NODE)
-                ENSURE THAT ALL OF THE VALUES IN gradAccumMatrix's matrices are 0 to start, which could be annoying'''
-   
+                'iterate over the accumulated gradient matrix, accumulate the (DELTA OF TARGET NODE) * (OUTPUT OF SOURCE NODE)'
+                for row in rows:
+                    for column in columns:
+                        gradient = (deltaArray[layer])[row] * (deltaArray[layer-1])[column]
+                        gradAccumMatrix[row,column] = gradAccumMatrix[row,column]+gradient
                         
+            'Take the values in gradAccumMatrix, add each one (after multiplying by stepsize) to the weight matrix'
+            for pos in range(len(gradAccumList)):
+                weightMatrix = self.weightMatrixList[pos]
+                gradAccumMatrix = gradAccumList[pos]
+                for i in range(numpy.shape(gradAccumMatrix)[0]):
+                    for j in range(numpy.shape(gradAccumMatrix[1])):
+                        weightMatrix[i,j] = weightMatrix[i,j] + (gradAccumMatrix[i,j])*stepSize
+                    
             
             
         
