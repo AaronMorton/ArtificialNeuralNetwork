@@ -32,7 +32,7 @@ class arffWrapper():
         self.classList = []
         while line != "":
             self.attrList.append(list(map(float,str.split(line,',')[0:-1])))
-            self.classList.append(float((str.split(line,',')[-1]).replace("\n","")))
+            self.classList.append([float((str.split(line,',')[-1]).replace("\n",""))])
             line = self.file.readline()
             
     def getAttrCount(self):

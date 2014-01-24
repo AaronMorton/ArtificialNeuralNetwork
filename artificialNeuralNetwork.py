@@ -88,16 +88,17 @@ class ANN():
                 rows = numpy.shape(gradAccumMatrix)[0]
                 columns = numpy.shape(gradAccumMatrix)[1]
                 'iterate over the accumulated gradient matrix'
-                for row in rows:
-                    for column in columns:
+                for row in range(rows):
+                    for column in range(columns):
                         gradAccumMatrix[row,column] = 0
                         
+                    
         
         'go through all instances, feed each into network, produce gradients, and accumulate them'
         for pos in range(len(instanceList)):
-            inst = instanceList(pos)
-            clas = classList(pos)
-            
+            inst = instanceList[pos]
+            clas = classList[pos]
+                
             'here, feed the instance into the network. potentially calculate error as well'
             result = self.feed(inst)
             
@@ -109,9 +110,9 @@ class ANN():
                 layer = len(deltaArray)-(i+1)
                 'If dealing with output layer,compute delta differently'
                 if(layer == len(deltaArray) - 1):
-                    for j in range(len(deltaArray(layer))):
+                    for j in range(len(deltaArray[layer])):
                         #HERE I AM ASSUMING THAT THE CLASS IS ONE DIMENSIONAL
-                        error = clas[pos] - result[j]
+                        error = clas[j] - result[j] 
                         preSynap = (self.layerArray[layer])[j]
                         derivAppl = sigmoidDeriv(preSynap)
                         
@@ -124,14 +125,14 @@ class ANN():
                     weightMatrix = self.weightMatrixList[layer]
                     
                     'For each node in this layer, compute the delta and put it in the array'
-                    for j in range(len(deltaArray(layer))):
+                    for j in range(len(deltaArray[layer])):
                         preSynap = (self.layerArray[layer])[j]
                         derivAppl = sigmoidDeriv(preSynap)
                         
                         'Sum up the product of deltas and weights across all nodes in the next layer'
                         deltaWeightSum = 0.0
-                        for k in range(len(deltaArray(layer+1))):
-                            delta = deltaArray[k]
+                        for k in range(len(deltaArray[layer+1])):
+                            delta = (deltaArray[layer])[k]
                             weight = weightMatrix[k,j]
                             deltaWeightSum += delta*weight
                             
@@ -147,6 +148,8 @@ class ANN():
                 rows = numpy.shape(gradAccumMatrix)[0]
                 columns = numpy.shape(gradAccumMatrix)[1]
                 'iterate over the accumulated gradient matrix, accumulate the (DELTA OF TARGET NODE) * (OUTPUT OF SOURCE NODE)'
+                #ERRORS FIXED UP TO HERE
+                #FIX WAY I ITERATE OVER THE ACCUM GRADIENT MATRIX 
                 for row in rows:
                     for column in columns:
                         gradient = (deltaArray[layer])[row] * (deltaArray[layer-1])[column]
@@ -158,7 +161,7 @@ class ANN():
                 gradAccumMatrix = gradAccumList[pos]
                 for i in range(numpy.shape(gradAccumMatrix)[0]):
                     for j in range(numpy.shape(gradAccumMatrix[1])):
-                        weightMatrix[i,j] = weightMatrix[i,j] + (gradAccumMatrix[i,j])*stepSize
+                        weightMatrix[i,j] = weightMatrix[i,j] - (gradAccumMatrix[i,j])*stepSize
                     
             
             
@@ -213,12 +216,14 @@ def sigmoidDeriv(x):
     return (2/math.pi) * (1 / (1 + math.pow(x,2)))
     
 def main():
-    data = arffWrapper("export.arff");
+    data = arffWrapper("simpleOr.arff");
     testAnn = ANN([data.getAttrCount(),2,1])
 #     weights = testAnn.getWeightMatrixList()
 #     for mat in weights:
 #         print(mat)
 #         print(numpy.shape(mat))
 #     print(testAnn.getHiddenLayers())
-    print(testAnn.objectiveFunctionBatch(data.getInstances(), data.getClasses()))    
+    print(testAnn.objectiveFunctionBatch(data.getInstances(), data.getClasses()))  
+    testAnn.trainBatch(data.getInstances(), data.getClasses(), 0.1)  
+    print(testAnn.objectiveFunctionBatch(data.getInstances(), data.getClasses()))  
 main()
