@@ -132,7 +132,8 @@ class ANN():
                         'Sum up the product of deltas and weights across all nodes in the next layer'
                         deltaWeightSum = 0.0
                         for k in range(len(deltaArray[layer+1])):
-                            delta = (deltaArray[layer])[k]
+                            #changed from [layer] to [layer+1], to fix error with 3 hidden nodes
+                            delta = (deltaArray[layer+1])[k]
                             weight = weightMatrix[k,j]
                             deltaWeightSum += delta*weight
                             
@@ -225,13 +226,25 @@ def sigmoidDeriv(x):
     
 def main():
     data = arffWrapper("simpleOr.arff");
-    testAnn = ANN([data.getAttrCount(),2,1])
+    testAnn = ANN([data.getAttrCount(),2,4,5,data.getClassSize()])
 #     weights = testAnn.getWeightMatrixList()
 #     for mat in weights:
 #         print(mat)
 #         print(numpy.shape(mat))
 #     print(testAnn.getHiddenLayers())
-    print(testAnn.objectiveFunctionBatch(data.getInstances(), data.getClasses()))  
-    testAnn.trainBatch(data.getInstances(), data.getClasses(), 0.1)  
-    print(testAnn.objectiveFunctionBatch(data.getInstances(), data.getClasses()))  
+    trial = 1
+    print(testAnn.objectiveFunctionBatch(data.getInstances(), data.getClasses()))
+    
+    while(testAnn.objectiveFunctionBatch(data.getInstances(), data.getClasses())>0.001):
+        
+        print("*Train/Test Run #"+str(trial),"*")
+        trial+=1
+          
+        testAnn.trainBatch(data.getInstances(), data.getClasses(), 0.2)
+        for i in range(data.getInstCount()):
+            print("Result of feeding:",data.getInstance(i),"->",testAnn.feed(data.getInstance(i)))
+            
+        print("Error:",testAnn.objectiveFunctionBatch(data.getInstances(), data.getClasses()))  
+        
+        print()
 main()

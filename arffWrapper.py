@@ -38,6 +38,12 @@ class arffWrapper():
     def getAttrCount(self):
         return len(self.attrList[0])
     
+    def getInstCount(self):
+        return len(self.attrList)
+    
+    def getClassSize(self):
+        return len(self.getClass(0))
+    
     def getInstance(self,index):
         return self.attrList[index]
     
