@@ -145,23 +145,31 @@ class ANN():
             'Use these deltas to produce the gradients'
             for layer in range(1,len(deltaArray)):
                 gradAccumMatrix = gradAccumList[layer-1]
+                weightMatrix = self.weightMatrixList[layer-1]
                 rows = numpy.shape(gradAccumMatrix)[0]
                 columns = numpy.shape(gradAccumMatrix)[1]
                 'iterate over the accumulated gradient matrix, accumulate the (DELTA OF TARGET NODE) * (OUTPUT OF SOURCE NODE)'
-                #ERRORS FIXED UP TO HERE
-                #FIX WAY I ITERATE OVER THE ACCUM GRADIENT MATRIX 
-                for row in rows:
-                    for column in columns:
-                        gradient = (deltaArray[layer])[row] * (deltaArray[layer-1])[column]
+                
+                
+                for row in range(rows):
+                    for column in range(columns):
+                        'Here deal with calculating the gradient of the internal bias. If you are in last column of gradient accum matrix, calc differently'
+                        if(column<columns-1):
+                            gradient = (deltaArray[layer])[row] * (self.layerArray[layer-1])[column] #IS THIS THE CORRECT SPOT IN LAYER ARRAY TO GET THE OUTPUT OF THE SOURCE NODE?
+                        else:
+                            gradient = (deltaArray[layer])[row] * weightMatrix[row,column] #is this correct analog for value of output? this is just the value of the bias
                         gradAccumMatrix[row,column] = gradAccumMatrix[row,column]+gradient
-                        
+            #ERRORS FIXED UP TO HERE
             'Take the values in gradAccumMatrix, add each one (after multiplying by stepsize) to the weight matrix'
             for pos in range(len(gradAccumList)):
                 weightMatrix = self.weightMatrixList[pos]
                 gradAccumMatrix = gradAccumList[pos]
                 for i in range(numpy.shape(gradAccumMatrix)[0]):
-                    for j in range(numpy.shape(gradAccumMatrix[1])):
-                        weightMatrix[i,j] = weightMatrix[i,j] - (gradAccumMatrix[i,j])*stepSize
+                    for j in range(numpy.shape(gradAccumMatrix)[1]):
+                        weightMatrix[i,j] = weightMatrix[i,j] + (gradAccumMatrix[i,j])*stepSize
+                        
+                        #ERRORS FIXED ALL THE WAY, BUT RIGHT NOW HAVING THIS BE A PLUS AND NOT A MINUS REDUCES ERROR
+                        #whattttttttttt
                     
             
             
