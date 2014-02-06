@@ -47,10 +47,10 @@ class arffWrapper():
         return len(self.getClass(0))
     
     def getInstanceRange(self,index1,index2):
-        return self.attrList[index1:index2]
+        return self.attrList[index1:index2+1]
 
     def getClassRange(self,index1,index2):
-        return self.attrList[index1:index2]
+        return self.classList[index1:index2+1]
     
     def getInstance(self,index):
         return self.attrList[index]
@@ -80,7 +80,7 @@ class arffWrapper():
         
             
 def main():
-    a = arffWrapper("export.arff");
+    a = arffWrapper("export_prediction_new.arff");
     for i in range(len(a.getClasses())):
         print(str(a.getInstance(i))+" | "+str(a.getClass(i)))
     a.shuffle();

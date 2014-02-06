@@ -225,26 +225,35 @@ def sigmoidDeriv(x):
     return (2/math.pi) * (1 / (1 + math.pow(x,2)))
     
 def main():
-    data = arffWrapper("simpleOr.arff");
-    testAnn = ANN([data.getAttrCount(),2,data.getClassSize()])
+    #data = arffWrapper("simpleOr.arff");
+    data = arffWrapper("export_prediction_new.arff")
+    #testAnn = ANN([data.getAttrCount(),2,data.getClassSize()])
+    imagenAnn = ANN([data.getAttrCount(),108,data.getClassSize()])
 #     weights = testAnn.getWeightMatrixList()
 #     for mat in weights:
 #         print(mat)
 #         print(numpy.shape(mat))
 #     print(testAnn.getHiddenLayers())
     trial = 1
-    print(testAnn.objectiveFunctionBatch(data.getInstances(), data.getClasses()))
+    data.shuffle()
+    print("initial objective function perf on validation set, the first 54 instances")
+    print(imagenAnn.objectiveFunctionBatch(data.getInstanceRange(0,54), data.getClassRange(0,54)))
     
-    while(testAnn.objectiveFunctionBatch(data.getInstances(), data.getClasses())>0.001):
-        
-        print("*Train/Test Run #"+str(trial),"*")
-        trial+=1
+    for i in range(10):
+    #while(testAnn.objectiveFunctionBatch(data.getInstanceRange(55,271), data.getClasseRange(55,271))>0.01):
+        print("*Train/Test Run #"+str(i),"*")
           
-        testAnn.trainBatch(data.getInstances(), data.getClasses(), 0.2)
+        imagenAnn.trainBatch(data.getInstanceRange(55,220), data.getClassRange(55,220), 0.1)
         for i in range(data.getInstCount()):
-            print("Result of feeding:",data.getInstance(i),"->",testAnn.feed(data.getInstance(i)))
+            print("Result of feeding:",data.getInstance(i),"->",imagenAnn.feed(data.getInstance(i)))
             
-        print("Error:",testAnn.objectiveFunctionBatch(data.getInstances(), data.getClasses()))  
+        print("Error on internal test set:",imagenAnn.objectiveFunctionBatch(data.getInstanceRange(221,271), data.getClassRange(221,271)))  
         
         print()
+        data.shuffle()
+        
+    print("final objective function perf on validation set, the first 54 instances")
+    print(imagenAnn.objectiveFunctionBatch(data.getInstanceRange(0,54), data.getClassRange(0,54)))
+    
+    print(imagenAnn.getWeightMatrixList()[0])
 main()
