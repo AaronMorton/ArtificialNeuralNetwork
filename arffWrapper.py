@@ -6,6 +6,8 @@ A wrapper for extracting data from ARFF files
 @author: Aaron Morton
 '''
 
+import random
+
 class arffWrapper():
 
     def __init__(self,fileName1):
@@ -44,6 +46,12 @@ class arffWrapper():
     def getClassSize(self):
         return len(self.getClass(0))
     
+    def getInstanceRange(self,index1,index2):
+        return self.attrList[index1:index2]
+
+    def getClassRange(self,index1,index2):
+        return self.attrList[index1:index2]
+    
     def getInstance(self,index):
         return self.attrList[index]
     
@@ -55,12 +63,29 @@ class arffWrapper():
     
     def getClasses(self):
         return self.classList
+    
+    def shuffle(self):
+        classListShuffle = []
+        attrListShuffle = []
+        
+        indices = list(range(len(self.classList)))
+        random.shuffle(indices)
+        
+        for i in indices:
+            classListShuffle.append(self.classList[i])
+            attrListShuffle.append(self.attrList[i])
+            
+        self.classList=classListShuffle
+        self.attrList=attrListShuffle
+        
             
 def main():
     a = arffWrapper("export.arff");
-    print(a.classList)
-    for b in a.attrList:
-        print(b)
-    print(a.getAttrCount())
+    for i in range(len(a.getClasses())):
+        print(str(a.getInstance(i))+" | "+str(a.getClass(i)))
+    a.shuffle();
+    for i in range(len(a.getClasses())):
+        print(str(a.getInstance(i))+" | "+str(a.getClass(i)))
     
+main()
         

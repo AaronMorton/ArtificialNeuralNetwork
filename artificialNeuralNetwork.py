@@ -226,7 +226,7 @@ def sigmoidDeriv(x):
     
 def main():
     data = arffWrapper("simpleOr.arff");
-    testAnn = ANN([data.getAttrCount(),2,4,5,data.getClassSize()])
+    testAnn = ANN([data.getAttrCount(),2,data.getClassSize()])
 #     weights = testAnn.getWeightMatrixList()
 #     for mat in weights:
 #         print(mat)
